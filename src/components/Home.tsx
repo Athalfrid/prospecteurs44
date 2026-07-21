@@ -2,14 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 
-// Types locaux pour notre flux d'actualités
-interface EventItem {
-    id: string;
-    type: 'member_new' | 'birthday' | 'departure' | 'event';
-    title: string;
-    description: string;
-    date: string;
-}
+
 interface UserProfileData {
     role: 'member' | 'admin';
     is_validated: boolean;
@@ -25,30 +18,7 @@ const Home: React.FC<HomeProps> = ({ user, userProfile }) => {
 
     const navigate = useNavigate();
 
-    // Simulation de données pour le flux de la vie du club
-    const latestEvents: EventItem[] = [
-        {
-            id: '1',
-            type: 'member_new',
-            title: 'Bienvenue à Thomas !',
-            description: 'Nouveau prospecteur équipé d\'un Deus II qui rejoint le 44.',
-            date: 'Hier'
-        },
-        {
-            id: '2',
-            type: 'birthday',
-            title: '🎂 Joyeux Anniversaire !',
-            description: 'Un bon anniversaire à notre doyen Jean-Pierre !',
-            date: '18 Juil.'
-        },
-        {
-            id: '3',
-            type: 'event',
-            title: 'Sortie Groupe',
-            description: 'Grosse dépollution prévue dimanche matin en forêt.',
-            date: 'En cours'
-        }
-    ];
+
 
     return (
         <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
