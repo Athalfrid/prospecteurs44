@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../database/supabaseClient';
+import { Menu, X } from 'lucide-react';
 
 interface UserProfileData {
     role: 'member' | 'admin';
@@ -15,10 +16,12 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
     const [pseudo, setPseudo] = useState<string | null>(null);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
         setPseudo(null); // On vide le pseudo à la déconnexion
+        setIsOpen(false);
     };
 
     // On écoute les changements d'utilisateur pour charger le pseudo depuis la table profiles
@@ -55,8 +58,8 @@ const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
                     Prospecteurs<span className="text-amber-600">44</span>
                 </Link>
 
-                {/* LIENS */}
-                <div className="flex items-center gap-6">
+                {/* LIENS DESKTOP (Cachés sur mobile) */}
+                <div className="hidden md:flex items-center gap-6">
                     <Link to="/" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition">
                         Accueil
                     </Link>
@@ -96,7 +99,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
                         </Link>
                     )}
 
-
                     <Link
                         to="/declarer-sos"
                         className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5"
@@ -105,7 +107,89 @@ const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
                         Signaler une perte
                     </Link>
                 </div>
+
+                {/* BOUTON BURGER MOBILE (Visible uniquement sur mobile) */}
+                <div className="flex items-center gap-3 md:hidden">
+                    <Link
+                        to="/declarer-sos"
+                        className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition flex items-center gap-1"
+                    >
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
+                        SOS
+                    </Link>
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="text-gray-600 hover:text-gray-900 focus:outline-none p-1"
+                        aria-label="Menu"
+                    >
+                        {isOpen ? <X size={26} /> : <Menu size={26} />}
+                    </button>
+                </div>
             </div>
+
+            {/* MENU DÉROULANT MOBILE */}
+            {isOpen && (
+                <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-3 shadow-lg">
+                    <Link
+                        to="/"
+                        onClick={() => setIsOpen(false)}
+                        className="block text-sm font-semibold text-gray-600 hover:text-gray-900 py-1"
+                    >
+                        Accueil
+                    </Link>
+                    <Link
+                        to="/sos"
+                        onClick={() => setIsOpen(false)}
+                        className="block text-sm font-semibold text-gray-600 hover:text-gray-900 py-1"
+                    >
+                        SOS en cours
+                    </Link>
+                    <Link
+                        to="/forum"
+                        onClick={() => setIsOpen(false)}
+                        className="block text-sm font-semibold text-gray-600 hover:text-gray-900 py-1"
+                    >
+                        Forum
+                    </Link>
+
+                    {user ? (
+                        <div className="pt-2 border-t border-gray-100 space-y-3">
+                            <Link
+                                to="/profil"
+                                onClick={() => setIsOpen(false)}
+                                className="block text-xs font-medium text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-lg truncate transition"
+                            >
+                                ⚙️ {pseudo || user.email}
+                            </Link>
+                            {userProfile?.role === 'admin' && (
+                                <Link
+                                    to="/admin"
+                                    onClick={() => setIsOpen(false)}
+                                    className="block text-sm font-semibold text-gray-600 hover:text-gray-900 py-1"
+                                >
+                                    Admin
+                                </Link>
+                            )}
+                            <button
+                                onClick={handleLogout}
+                                className="block w-full text-left text-sm font-semibold text-red-600 hover:text-red-800 py-1"
+                            >
+                                Déconnexion
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="pt-2 border-t border-gray-100">
+                            <Link
+                                to="/connexion"
+                                onClick={() => setIsOpen(false)}
+                                className="block text-sm font-semibold text-gray-600 hover:text-gray-900 py-1"
+                            >
+                                Connexion
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            )}
         </nav>
     );
 };
