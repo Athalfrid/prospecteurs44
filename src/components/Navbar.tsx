@@ -57,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
             <div className="max-w-8xl mx-auto px-6 h-16 flex items-center justify-between">
                 {/* LOGO */}
-                <Link to="/" className="text-2xl font-black tracking-tight text-gray-900 flex">
+                <Link to="/" className="text-2xl md:text-xl font-black tracking-tight text-gray-900 flex">
                     <img
                         src="/icon-512-removebg-preview.png"
                         alt="Logo Prospecteurs44"
