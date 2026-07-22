@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './database/supabaseClient';
 import type { User } from '@supabase/supabase-js';
 import './App.css'
@@ -21,7 +21,6 @@ interface UserProfileData {
 }
 
 function AppRoutes({ user, setUser }: { user: User | null, setUser: (u: User | null) => void }) {
-  const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
 
   useEffect(() => {
