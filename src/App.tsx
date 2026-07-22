@@ -12,6 +12,7 @@ import Profile from './components/Profile';
 import Forum from './components/Forum';
 import AdminPanel from './pages/AdminPanel';
 import ProtectedRoute from './components/ProtectedRoute';
+import About from './components/About';
 
 // Interface locale pour typer proprement le profil utilisateur
 interface UserProfileData {
@@ -44,7 +45,7 @@ function AppRoutes({ user, setUser }: { user: User | null, setUser: (u: User | n
       }
     };
 
-    // Récupère la session au premier chargement
+    // 1. Récupère la session initiale au chargement
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -55,25 +56,22 @@ function AppRoutes({ user, setUser }: { user: User | null, setUser: (u: User | n
       }
     });
 
-    // Écoute les changements (connexion / déconnexion / validation d'email)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // 2. Écoute les connexions/déconnexions en direct
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-
       if (currentUser) {
         fetchUserProfile(currentUser.id);
       } else {
         setUserProfile(null);
       }
-
-      // ⚡ Redirection à la connexion initiale
-      if (event === 'SIGNED_IN' && currentUser) {
-        navigate('/profil');
-      }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate, setUser]); // Retrait de setUserProfile des dépendances (état local stable)
+    return () => {
+      subscription.unsubscribe();
+    };
+
+  }, [setUser]); // Retrait de setUserProfile des dépendances (état local stable)
 
   return (
     <>
@@ -85,6 +83,7 @@ function AppRoutes({ user, setUser }: { user: User | null, setUser: (u: User | n
         <Route path="/declarer-sos" element={<SosForm />} />
         <Route path="/connexion" element={<Login />} />
         <Route path="/profil" element={<Profile user={user} />} />
+        <Route path="/presentation" element={<About />} />
 
         {/* 🔒 Routes protégées : inaccessible si pas validé */}
         <Route
@@ -111,11 +110,16 @@ function AppRoutes({ user, setUser }: { user: User | null, setUser: (u: User | n
             user && userProfile?.role === 'admin' ? (
               <AdminPanel />
             ) : (
-              <Navigate to="/" replace />
+              <Navigate to="/connexion" replace />
             )
           }
         />
       </Routes>
+      {/* FOOTER SIMPLE */}
+      <footer className="border-t border-slate-100 py-6 text-center text-xs text-slate-500 bg-white">
+        <p>© {new Date().getFullYear()} Prospecteurs44 — Tous droits réservés.</p>
+        <p>Développé par <a target="_blank" href="http://github.com/Athalfrid" className="text-amber-600 hover:underline">ROBIN Aurélien</a></p>
+      </footer>
     </>
   );
 }

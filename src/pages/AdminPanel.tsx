@@ -58,6 +58,16 @@ const AdminPanel: React.FC = () => {
         }
     };
 
+    const handleRefuse = async (id: string) => {
+        const { error } = await supabase.from('profiles').delete().eq('id', id);
+        if (error) {
+            setMessage(`❌ Erreur: ${error.message}`);
+        } else {
+            setMessage('✅ Membre supprimé avec succès !');
+            setPendingUsers(pendingUsers.filter(u => u.id !== id));
+        }
+    }
+
     if (loading) return <div className="p-8 text-center">Chargement des demandes...</div>;
 
     return (
@@ -98,6 +108,13 @@ const AdminPanel: React.FC = () => {
                                 className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-sm transition"
                             >
                                 Accepter le membre
+                            </button>
+
+                            <button
+                                onClick={() => handleRefuse(user.id)}
+                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-sm transition"
+                            >
+                                Refuser le membre
                             </button>
                         </div>
                     </div>

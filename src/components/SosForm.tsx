@@ -1,226 +1,155 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabaseClient';
 
 const SosForm: React.FC = () => {
-  const [reporterName, setReporterName] = useState('');
-  const [reporterContact, setReporterContact] = useState('');
-  const [objectType, setObjectType] = useState('Bague');
-  const [lossDate, setLossDate] = useState('');
-  const [locationName, setLocationName] = useState('');
-  const [description, setDescription] = useState('');
-  
-  // NOUVEAUX ÉTATS POUR LE GPS
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [geoLoading, setGeoLoading] = useState(false);
-  const [geoStatus, setGeoStatus] = useState<string | null>(null);
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
 
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const [formData, setFormData] = useState({
+        commune: '',
+        objet: '',
+        description: '',
+        contact_nom: '',
+        contact_tel: '',
+        contact_email: ''
+    });
 
-  // FONCTION DE GÉOLOCALISATION
-  const handleGeolocate = () => {
-    if (!navigator.geolocation) {
-      setGeoStatus("La géolocalisation n'est pas supportée par votre navigateur.");
-      return;
-    }
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-    setGeoLoading(true);
-    setGeoStatus("Recherche des coordonnées satellites en cours...");
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setErrorMsg('');
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-        setGeoLoading(false);
-        setGeoStatus("📍 Position capturée avec succès !");
-      },
-      (error) => {
-        setGeoLoading(false);
-        console.error(error);
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setGeoStatus("❌ Vous avez refusé l'accès à la position.");
-            break;
-          default:
-            setGeoStatus("❌ Impossible de récupérer la position exacte.");
-            break;
+        try {
+            const { error } = await supabase
+                .from('sos_pertes')
+                .insert([formData]);
+
+            if (error) throw error;
+
+            setSuccess(true);
+            setTimeout(() => {
+                navigate('/sos');
+            }, 2000);
+        } catch (err: any) {
+            console.error("Erreur enregistrement SOS:", err);
+            setErrorMsg("Une erreur est survenue lors de l'envoi du formulaire.");
+        } finally {
+            setLoading(false);
         }
-      },
-      { enableHighAccuracy: true, timeout: 10000 } // Force le GPS haute précision du smartphone
-    );
-  };
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
+    return (
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Déclarer un objet perdu</h1>
+                <p className="text-sm text-slate-600 mt-1 mb-6">Remplissez ce formulaire pour alerter l'équipe des Prospecteurs44.</p>
 
-    try {
-      const { error: supabaseError } = await supabase
-        .from('sos_alerts')
-        .insert([
-          {
-            reporter_name: reporterName,
-            reporter_contact: reporterContact,
-            object_type: objectType,
-            loss_date: lossDate ? lossDate : null,
-            location_name: locationName,
-            description: description,
-            latitude: latitude, // ON ENVOIE LA LATITUDE
-            longitude: longitude, // ON ENVOIE LA LONGITUDE
-            status: 'en_cours'
-          }
-        ]);
+                {success ? (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl text-sm font-medium text-center">
+                        ✅ Votre signalement a bien été enregistré. Redirection en cours...
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                        {errorMsg && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs font-medium">
+                                {errorMsg}
+                            </div>
+                        )}
 
-      if (supabaseError) throw supabaseError;
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Commune / Ville de la perte</label>
+                            <input
+                                type="text"
+                                name="commune"
+                                required
+                                value={formData.commune}
+                                onChange={handleChange}
+                                placeholder="Ex: La Chapelle-Basse-Mer"
+                                className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                            />
+                        </div>
 
-      setSuccess(true);
-      setReporterName('');
-      setReporterContact('');
-      setLossDate('');
-      setLocationName('');
-      setDescription('');
-      setLatitude(null);
-      setLongitude(null);
-      setGeoStatus(null);
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue lors de l'envoi.");
-    } finally {
-      setLoading(false);
-    }
-  };
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Objet perdu</label>
+                            <input
+                                type="text"
+                                name="objet"
+                                required
+                                value={formData.objet}
+                                onChange={handleChange}
+                                placeholder="Ex: Alliance en or, clés de voiture..."
+                                className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                            />
+                        </div>
 
-  return (
-    <div className="max-w-2xl mx-auto my-10 p-6 bg-white rounded-2xl shadow-md border border-gray-100">
-      <div className="text-center mb-8">
-        <span className="text-3xl">📍</span>
-        <h2 className="mt-2 text-2xl font-black text-gray-900">Déclarer un Objet Perdu</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Remplissez ce formulaire pour alerter les prospecteurs de l'association.
-        </p>
-      </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Description et circonstances</label>
+                            <textarea
+                                name="description"
+                                rows={4}
+                                required
+                                value={formData.description}
+                                onChange={handleChange}
+                                placeholder="Donnez un maximum de détails (zone approximative, date, contexte...)"
+                                className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 resize-none"
+                            />
+                        </div>
 
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl text-sm font-medium">
-          🎉 Votre alerte SOS a bien été enregistrée ! Les membres de l'association vont analyser votre demande.
-        </div>
-      )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Votre Nom / Prénom</label>
+                                <input
+                                    type="text"
+                                    name="contact_nom"
+                                    required
+                                    value={formData.contact_nom}
+                                    onChange={handleChange}
+                                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Téléphone</label>
+                                <input
+                                    type="tel"
+                                    name="contact_tel"
+                                    value={formData.contact_tel}
+                                    onChange={handleChange}
+                                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                                />
+                            </div>
+                        </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm font-medium">
-          ❌ Erreur : {error}
-        </div>
-      )}
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Email</label>
+                            <input
+                                type="email"
+                                name="contact_email"
+                                required
+                                value={formData.contact_email}
+                                onChange={handleChange}
+                                className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                            />
+                        </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Votre Nom / Prénom</label>
-            <input 
-              type="text" 
-              required
-              value={reporterName}
-              onChange={(e) => setReporterName(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 text-sm"
-              placeholder="Jean Dupont"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Contact (Tél ou Messenger)</label>
-            <input 
-              type="text" 
-              required
-              value={reporterContact}
-              onChange={(e) => setReporterContact(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 text-sm"
-              placeholder="06 12 34... ou lien profil FB"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Type d'objet</label>
-            <select 
-              value={objectType}
-              onChange={(e) => setObjectType(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 text-sm bg-white"
-            >
-              <option value="Bague">Alliance / Bague</option>
-              <option value="Collier">Collier / Bracelet</option>
-              <option value="Clés">Clés</option>
-              <option value="Téléphone">Téléphone</option>
-              <option value="Autre">Autre objet métallique</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Date de la perte</label>
-            <input 
-              type="date" 
-              value={lossDate}
-              onChange={(e) => setLossDate(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 text-sm"
-            />
-          </div>
-        </div>
-
-        {/* SECTION LIEU ET GEOLOCALISATION */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Lieu ou commune (44)</label>
-          <input 
-            type="text" 
-            required
-            value={locationName}
-            onChange={(e) => setLocationName(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 text-sm mb-2"
-            placeholder="Ex: Plage d'Oudon, Jardin privé à Vallet..."
-          />
-          
-          {/* ENCART GÉOLOCALISATION */}
-          <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="text-xs text-gray-500">
-              <p className="font-semibold text-gray-700">Vous êtes actuellement sur le lieu de la perte ?</p>
-              {geoStatus ? (
-                <p className="mt-0.5 text-amber-700 font-medium">{geoStatus}</p>
-              ) : (
-                <p className="mt-0.5">Ajoutez vos coordonnées GPS exactes pour aider les chercheurs.</p>
-              )}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-sm py-3 rounded-xl shadow transition disabled:opacity-50 mt-2"
+                        >
+                            {loading ? "Envoi en cours..." : "Envoyer le signalement"}
+                        </button>
+                    </form>
+                )}
             </div>
-            <button
-              type="button"
-              disabled={geoLoading}
-              onClick={handleGeolocate}
-              className="text-xs bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 text-white font-bold py-2 px-3 rounded-lg transition shrink-0 shadow-sm"
-            >
-              {geoLoading ? "Calcul..." : "🎯 Me localiser sur place"}
-            </button>
-          </div>
         </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Description & Circonstances</label>
-          <textarea 
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 text-sm"
-            placeholder="Donnez un maximum de détails (perdu en tondant la pelouse, couleur de l'or, taille...)"
-          />
-        </div>
-
-        <button 
-          type="submit" 
-          disabled={loading}
-          className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold py-3 px-6 rounded-xl shadow-md transition transform active:scale-95"
-        >
-          {loading ? "Envoi de l'alerte..." : "🚨 Lancer l'alerte SOS"}
-        </button>
-      </form>
-    </div>
-  );
+    );
 };
 
 export default SosForm;

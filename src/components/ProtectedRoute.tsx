@@ -9,6 +9,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ user, userProfile, children }) => {
+
+  // Les admins ont toujours le droit de passer, même si is_validated est false
+  if (userProfile?.role === 'admin') {
+    return <>{children}</>;
+  }
+
   // 1. Si l'utilisateur n'est pas du tout connecté -> redirection vers la page de connexion
   if (!user) {
     return <Navigate to="/connexion" replace />;
