@@ -57,12 +57,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
             <div className="max-w-8xl mx-auto px-6 h-16 flex items-center justify-between">
                 {/* LOGO */}
-                <Link to="/" className="text-2xl md:text-xl font-black tracking-tight text-gray-900 flex">
+                <Link to="/" className="text-xl md:text-4xl font-black tracking-tight text-gray-900 flex justify-center items-center">
                     <img
-                        src="/icon-512-removebg-preview.png"
+                        src="/icon-512.png"
                         alt="Logo Prospecteurs44"
-                        className="h-10 w-10 object-contain mr-4"
-                    />Prospecteurs<span className="text-amber-600">44</span>
+                        className="h-10 w-10 md:h-15 md:w-15 object-contain mr-4"
+                    />Prospecteurs<span className="text-amber-600">&nbsp;44</span>
                 </Link>
 
                 {/* LIENS DESKTOP (Cachés sur mobile) */}
@@ -94,27 +94,27 @@ const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
                             {/* ADMIN PANEL LINK */}
                             {userProfile?.role === 'admin' && (
                                 <Link to="/admin" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition">
-                                    Admin
+                                    🛡️ Admin
                                 </Link>
                             )}
                             <button
                                 onClick={handleLogout}
                                 className="text-sm font-semibold text-red-600 hover:cursor-pointer hover:text-red-800 transition"
                             >
-                                Déconnexion
+                                🏃🚪 Déconnexion
                             </button>
                         </div>
                     ) : (
                         <>
                             <Link to="/connexion" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition">
-                                Espace membre 🔒
+                                🔐 Espace membre
                             </Link>
                             <Link
                                 to="/declarer-sos"
                                 className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5"
                             >
-                                <span className="inline-block h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
-                                Signaler une perte
+                                <span className="text-xl animate-pulse">🆘</span>
+                                 Signaler une perte
                             </Link>
                         </>
                     )}
@@ -202,7 +202,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, userProfile }) => {
                                 onClick={() => setIsOpen(false)}
                                 className="block text-sm font-semibold text-gray-600 hover:text-gray-900 py-1"
                             >
-                                Connexion
+                                🔐 Connexion
                             </Link>
                         </div>
                     )}
