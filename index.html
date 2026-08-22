@@ -1,18 +1,70 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <!-- Tes autres balises head ici -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prospecteurs 44</title>
+  </head>
+  <body>
+    <!-- 🌟 ÉCRAN DE CHARGEMENT PERSONNALISÉ -->
+    <div id="initial-loader" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #111827; /* Couleur sombre, proche de gray-900 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      transition: opacity 0.5s ease-out;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    ">
+      <!-- 
+        🎯 TON PERSONNAGE ANIMÉ
+        Remplacez l'URL ci-dessous par le chemin de votre GIF ou image animée.
+        Exemple : '/images/detecteur-anim.gif'
+      -->
+      <img 
+        src="/prospecteur44.gif" 
+        alt="Détection en cours" 
+        style="
+          width: 450px; 
+          height: auto; 
+          margin-bottom: 20px;
+          object-fit: contain;
+        "
+      />
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>prospecteurs44</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0284c7">
-</head>
+      <!-- 🏷️ LE NOM DE L'ASSOCIATION -->
+      <h1 style="
+        color: #ffffff; 
+        font-size: 1.5rem; 
+        font-weight: 800; 
+        margin: 0;
+        letter-spacing: 0.05em;
+      ">
+        Prospecteurs 44
+      </h1>
+      
+      <!-- 💬 SOUS-TITRE -->
+      <p style="
+        color: #9ca3af; 
+        font-size: 0.875rem; 
+        margin-top: 8px;
+        font-weight: 300;
+      ">
+        Initialisation de l'application...
+      </p>
+    </div>
 
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
+    <!-- ⚛️ LE CONTENU DE TON APP REACT -->
+    <div id="root"></div>
 
+    <!-- Ton script React (à ne pas modifier) -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
